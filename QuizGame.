@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deontología Médica - Juego Interactivo</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(135deg, #dff6ff, #eef1ff, #e8fff5);
+        min-height: 100vh;
+        color: #203040;
+        overflow-x: hidden;
+    }
+
+    .presentation {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .slide {
+        display: none;
+        width: min(1000px, 95vw);
+        min-height: 650px;
+        background: rgba(255,255,255,0.96);
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+        animation: aparecer .5s ease;
+    }
+
+    .slide.active {
+        display: block;
+    }
+
+    @keyframes aparecer {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .decoracion {
+        position: absolute;
+        border-radius: 50%;
+        opacity: .25;
+        pointer-events: none;
+    }
+
+    .circulo1 {
+        width: 180px;
+        height: 180px;
+        background: #5ec8ff;
+        top: -70px;
+        right: -50px;
+    }
+
+    .circulo2 {
+        width: 140px;
+        height: 140px;
+        background: #77e6b5;
+        bottom: -60px;
+        left: -40px;
+    }
+
+    h1 {
+        color: #1769aa;
+        font-size: 45px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    h2 {
+        color: #1769aa;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    h3 {
+        color: #237c63;
+        margin-bottom: 10px;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 1.6;
+    }
+
+    .subtitulo {
+        text-align: center;
+        color: #4c6375;
+        font-size: 22px;
+        margin-bottom: 25px;
+    }
+
+    .doctor {
+        font-size: 100px;
+        text-align: center;
+        margin: 20px;
+        animation: flotar 2.5s infinite ease-in-out;
+    }
+
+    @keyframes flotar {
+        0%,100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .card {
+        background: #f3fbff;
+        border: 2px solid #c8eafa;
+        border-radius: 20px;
+        padding: 20px;
+        margin: 15px 0;
+    }
+
+    .instrucciones {
+        display: grid;
+        grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+        gap: 15px;
+        margin: 25px 0;
+    }
+
+    .instruccion {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,.08);
+    }
+
+    .icono {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        border: none;
+        border-radius: 14px;
+        padding: 14px 25px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: .2s;
+        margin: 7px;
+    }
+
+    button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(0,0,0,.15);
+    }
+
+    .btn-principal {
+        background: #1769aa;
+        color: white;
+    }
+
+    .btn-verde {
+        background: #2cb67d;
+        color: white;
+    }
+
+    .btn-naranja {
+        background: #ff9f43;
+        color: white;
+    }
+
+    .btn-rojo {
+        background: #ee5a5a;
+        color: white;
+    }
+
+    .btn-gris {
+        background: #64748b;
+        color: white;
+    }
+
+    .opciones {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .opcion {
+        background: #f4f8fb;
+        border: 2px solid #cbdce8;
+        color: #203040;
+        min-height: 65px;
+    }
+
+    .opcion:hover {
+        background: #e4f5ff;
+        border-color: #3da9fc;
+    }
+
+    .correcta {
+        background: #c9f7dc !important;
+        border-color: #2cb67d !important;
+    }
+
+    .incorrecta {
+        background: #ffd4d4 !important;
+        border-color: #ee5a5a !important;
+    }
+
+    .feedback {
+        display: none;
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        animation: aparecer .3s;
+    }
+
+    .feedback.correcto {
+        background: #d9fbe8;
+        color: #157347;
+    }
+
+    .feedback.incorrecto {
+        background: #ffe1e1;
+        color: #a52b2b;
+    }
+
+    .barra-superior {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        background: #edf7fc;
+        border-radius: 15px;
+        padding: 12px 18px;
+    }
+
+    .puntos {
+        font-size: 20px;
+        font-weight: bold;
+        color: #1769aa;
+    }
+
+    .progreso {
+        width: 45%;
+        height: 12px;
+        background: #dce8ef;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .progreso-barra {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg,#2cb67d,#3da9fc);
+        transition: width .4s;
+    }
+
+    .navegacion {
+        position: absolute;
+        bottom: 20px;
+        left: 30px;
+        right: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .numero {
+        color: #64748b;
+        font-weight: bold;
+    }
+
+    input {
+        width: 80%;
+        padding: 15px;
+        border: 2px solid #bcd3df;
+        border-radius: 12px;
+        font-size: 18px;
+        margin: 15px 0;
+    }
+
+    .resultado {
+        text-align: center;
+        padding-top: 40px;
+    }
+
+    .resultado-icono {
+        font-size: 90px;
+        margin: 20px;
+    }
+
+    .puntuacion-final {
+        font-size: 60px;
+        color: #1769aa;
+        font-weight: bold;
+        margin: 20px;
+    }
+
+    .insignia {
+        display: inline-block;
+        padding: 15px 25px;
+        border-radius: 30px;
+        background: #fff0b8;
+        color: #765600;
+        font-size: 22px;
+        font-weight: bold;
+        margin: 15px;
+    }
+
+    .relacionar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 25px;
+    }
+
+    .concepto {
+        background: #eaf7ff;
+        border: 2px solid #b8dff3;
+        border-radius: 15px;
+        padding: 18px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .concepto.seleccionado {
+        background: #ffe9a8;
+        border-color: #e5aa00;
+    }
+
+    .concepto.emparejado {
+        background: #c9f7dc;
+        border-color: #2cb67d;
+        cursor: default;
+    }
+
+    .mensaje-relacion {
+        margin-top: 15px;
+        font-weight: bold;
+        min-height: 25px;
+    }
+
+    @media(max-width:700px) {
+        .slide {
+            padding: 25px;
+            min-height: 700px;
+        }
+
+        h1 {
+            font-size: 34px;
+        }
+
+        h2 {
+            font-size: 25px;
+        }
+
+        .opciones,
+        .relacionar {
+            grid-template-columns: 1fr;
+        }
+
+        .progreso {
+            width: 35%;
+        }
+
+        .navegacion {
+            left: 15px;
+            right: 15px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="presentation">
+
+<!-- PORTADA -->
+<section class="slide active" id="slide0">
+
+    <div class="decoracion circulo1"></div>
+    <div class="decoracion circulo2"></div>
+
+    <div class="doctor">🩺👩‍⚕️</div>
+
+    <h1>DEONTOLOGÍA MÉDICA</h1>
+
+    <p class="subtitulo">
+        🎮 Misión: Ética en Acción
+    </p>
+
+    <div class="card">
+        <h3>🎯 Objetivo</h3>
+        <p>
+            Reforzar los conocimientos básicos de deontología médica
+            mediante preguntas, desafíos y situaciones clínicas sencillas.
+        </p>
+    </div>
+
+    <button class="btn-principal" onclick="irSlide(1)">
+        🚀 COMENZAR
+    </button>
+
+</section>
+
+
+<!-- INSTRUCCIONES -->
+<section class="slide" id="slide1">
+
+    <h2>📋 Instrucciones</h2>
+
+    <div class="instrucciones">
+
+        <div class="instruccion">
+            <div class="icono">🧠</div>
+            <h3>Responde</h3>
+            <p>Contesta los retos relacionados con la deontología médica.</p>
+        </div>
+
+        <div class="instruccion">
+            <div class="icono">⭐</div>
+            <h3>Gana puntos</h3>
+            <p>Cada respuesta correcta suma puntos.</p>
+        </div>
+
+        <div class="instruccion">
+            <div class="icono">💡</div>
+            <h3>Aprende</h3>
+            <p>Recibirás retroalimentación inmediatamente.</p>
+        </div>
+
+        <div class="instruccion">
+            <div class="icono">🏆</div>
+            <h3>Supera la misión</h3>
+            <p>Obtén la mayor puntuación posible.</p>
+        </div>
+
+    </div>
+
+    <div class="card">
+        <p>
+            <strong>Importante:</strong> lee cuidadosamente cada situación
+            antes de elegir tu respuesta.
+        </p>
+    </div>
+
+    <button class="btn-principal" onclick="irSlide(2)">
+        ▶️ INICIAR RETOS
+    </button>
+
+</section>
+
+
+<!-- RETO 1 -->
+<section class="slide" id="slide2">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <div class="progreso">
+            <div class="progreso-barra"></div>
+        </div>
+        <span>Reto 1/12</span>
+    </div>
+
+    <h2>🧠 Reto 1: Concepto fundamental</h2>
+
+    <div class="card">
+        <p>
+            ¿Qué estudia principalmente la deontología médica?
+        </p>
+    </div>
+
+    <div class="opciones">
+        <button class="opcion" onclick="respuesta(this,false,2)">
+            A) Las enfermedades infecciosas
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,2)">
+            B) Los deberes y normas que orientan la práctica médica
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,2)">
+            C) La anatomía humana
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,2)">
+            D) La farmacocinética
+        </button>
+    </div>
+
+    <div class="feedback" id="feedback2"></div>
+
+</section>
+
+
+<!-- RETO 2 -->
+<section class="slide" id="slide3">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 2/12</span>
+    </div>
+
+    <h2>⚖️ Reto 2: Principios</h2>
+
+    <div class="card">
+        <p>
+            ¿Cuál de los siguientes es un principio fundamental de la ética médica?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,3)">
+            A) Competencia entre médicos
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,3)">
+            B) Publicidad ilimitada
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,3)">
+            C) Respeto por la autonomía del paciente
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,3)">
+            D) Ocultar información al paciente
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback3"></div>
+
+</section>
+
+
+<!-- RETO 3 -->
+<section class="slide" id="slide4">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 3/12</span>
+    </div>
+
+    <h2>🔐 Reto 3: Confidencialidad</h2>
+
+    <div class="card">
+        <p>
+            Un estudiante de medicina conoce información privada de un paciente.
+            ¿Qué debe hacer?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,4)">
+            A) Compartirla con sus amigos
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,4)">
+            B) Mantener la confidencialidad de la información
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,4)">
+            C) Publicarla en redes sociales
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,4)">
+            D) Contarla como anécdota
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback4"></div>
+
+</section>
+
+
+<!-- RETO 4 -->
+<section class="slide" id="slide5">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 4/12</span>
+    </div>
+
+    <h2>👨‍⚕️ Reto 4: Verdadero o falso</h2>
+
+    <div class="card">
+        <p>
+            "El médico debe respetar la dignidad de todas las personas,
+            independientemente de sus características personales."
+        </p>
+    </div>
+
+    <button class="btn-verde" onclick="respuesta(this,true,5)">
+        ✅ VERDADERO
+    </button>
+
+    <button class="btn-rojo" onclick="respuesta(this,false,5)">
+        ❌ FALSO
+    </button>
+
+    <div class="feedback" id="feedback5"></div>
+
+</section>
+
+
+<!-- RETO 5 -->
+<section class="slide" id="slide6">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 5/12</span>
+    </div>
+
+    <h2>🧩 Reto 5: Identifica el concepto</h2>
+
+    <div class="card">
+        <p>
+            La capacidad de una persona para tomar decisiones informadas
+            sobre su propia atención médica se relaciona con:
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,true,6)">
+            A) Autonomía
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,6)">
+            B) Secreto profesional
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,6)">
+            C) Justicia
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,6)">
+            D) Publicidad médica
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback6"></div>
+
+</section>
+
+
+<!-- RETO 6 -->
+<section class="slide" id="slide7">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 6/12</span>
+    </div>
+
+    <h2>💬 Reto 6: Completa</h2>
+
+    <div class="card">
+        <p>
+            Completa la frase:
+        </p>
+
+        <p style="font-size:24px;margin-top:15px;">
+            "El médico debe proteger la información ____ del paciente."
+        </p>
+
+        <input type="text" id="respuestaTexto" placeholder="Escribe tu respuesta">
+
+        <br>
+
+        <button class="btn-principal" onclick="completar()">
+            Comprobar
+        </button>
+    </div>
+
+    <div class="feedback" id="feedback7"></div>
+
+</section>
+
+
+<!-- RETO 7 -->
+<section class="slide" id="slide8">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 7/12</span>
+    </div>
+
+    <h2>⚕️ Reto 7: Caso clínico</h2>
+
+    <div class="card">
+        <p>
+            Un paciente rechaza un procedimiento después de recibir información
+            suficiente sobre sus beneficios y riesgos.
+            ¿Qué principio debe considerarse especialmente?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,8)">
+            A) Competencia profesional
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,8)">
+            B) Autonomía
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,8)">
+            C) Publicidad
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,8)">
+            D) Jerarquía hospitalaria
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback8"></div>
+
+</section>
+
+
+<!-- RETO 8 -->
+<section class="slide" id="slide9">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 8/12</span>
+    </div>
+
+    <h2>⚖️ Reto 8: Justicia</h2>
+
+    <div class="card">
+        <p>
+            ¿Qué principio está relacionado con tratar de manera equitativa
+            a los pacientes y distribuir justamente los recursos sanitarios?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,9)">
+            A) Autonomía
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,9)">
+            B) Justicia
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,9)">
+            C) Confidencialidad
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,9)">
+            D) Veracidad
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback9"></div>
+
+</section>
+
+
+<!-- RETO 9 -->
+<section class="slide" id="slide10">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 9/12</span>
+    </div>
+
+    <h2>🗣️ Reto 9: Veracidad</h2>
+
+    <div class="card">
+        <p>
+            ¿Qué significa actuar con veracidad en la relación médico-paciente?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,true,10)">
+            A) Proporcionar información honesta y comprensible
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,10)">
+            B) Ocultar siempre el diagnóstico
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,10)">
+            C) Evitar responder preguntas
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,10)">
+            D) Dar información falsa para tranquilizar
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback10"></div>
+
+</section>
+
+
+<!-- RETO 10 -->
+<section class="slide" id="slide11">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 10/12</span>
+    </div>
+
+    <h2>🤝 Reto 10: Relaciona conceptos</h2>
+
+    <div class="card">
+        <p>
+            Selecciona un concepto y después su definición correspondiente.
+        </p>
+    </div>
+
+    <div class="relacionar">
+
+        <div>
+            <div class="concepto" data-id="autonomia" onclick="seleccionarConcepto(this)">
+                🧠 Autonomía
+            </div>
+
+            <div class="concepto" data-id="confidencialidad" onclick="seleccionarConcepto(this)">
+                🔐 Confidencialidad
+            </div>
+
+            <div class="concepto" data-id="justicia" onclick="seleccionarConcepto(this)">
+                ⚖️ Justicia
+            </div>
+        </div>
+
+        <div>
+            <div class="concepto" data-id="justicia" onclick="seleccionarConcepto(this)">
+                Distribución equitativa y trato justo
+            </div>
+
+            <div class="concepto" data-id="autonomia" onclick="seleccionarConcepto(this)">
+                Respeto a las decisiones informadas
+            </div>
+
+            <div class="concepto" data-id="confidencialidad" onclick="seleccionarConcepto(this)">
+                Protección de información privada
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mensaje-relacion" id="mensajeRelacion"></div>
+
+</section>
+
+
+<!-- RETO 11 -->
+<section class="slide" id="slide12">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 11/12</span>
+    </div>
+
+    <h2>🩺 Reto 11: Profesionalismo</h2>
+
+    <div class="card">
+        <p>
+            ¿Cuál de estas conductas demuestra profesionalismo médico?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,12)">
+            A) Ignorar las dudas del paciente
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,12)">
+            B) Actuar con responsabilidad y respeto
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,12)">
+            C) Compartir información privada
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,12)">
+            D) Realizar procedimientos sin preparación
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback12"></div>
+
+</section>
+
+
+<!-- RETO 12 -->
+<section class="slide" id="slide13">
+
+    <div class="barra-superior">
+        <span class="puntos">⭐ Puntos: <span class="score">0</span></span>
+        <span>Reto 12/12</span>
+    </div>
+
+    <h2>🏁 Reto final</h2>
+
+    <div class="card">
+        <p>
+            Un médico debe tomar decisiones considerando el bienestar del paciente,
+            respetando sus decisiones y actuando profesionalmente.
+            ¿Qué idea resume mejor esta situación?
+        </p>
+    </div>
+
+    <div class="opciones">
+
+        <button class="opcion" onclick="respuesta(this,false,13)">
+            A) La medicina solo depende del conocimiento científico
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,true,13)">
+            B) La práctica médica también implica deberes éticos y profesionales
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,13)">
+            C) Las normas profesionales son opcionales
+        </button>
+
+        <button class="opcion" onclick="respuesta(this,false,13)">
+            D) El paciente no participa en las decisiones
+        </button>
+
+    </div>
+
+    <div class="feedback" id="feedback13"></div>
+
+</section>
+
+
+<!-- RESULTADO -->
+<section class="slide" id="slide14">
+
+    <div class="resultado">
+
+        <div class="resultado-icono" id="resultadoIcono">
+            🏆
+        </div>
+
+        <h1>¡Misión completada!</h1>
+
+        <p>Tu puntuación final es:</p>
+
+        <div class="puntuacion-final">
+            <span id="puntuacionFinal">0</span> / 120
+        </div>
+
+        <div class="insignia" id="insignia">
+            🩺 Estudiante de Medicina
+        </div>
+
+        <div class="card">
+            <p id="mensajeFinal">
+                ¡Excelente trabajo! Sigue fortaleciendo tus conocimientos
+                sobre ética y deontología médica.
+            </p>
+        </div>
+
+        <button class="btn-principal" onclick="reiniciar()">
+            🔄 JUGAR DE NUEVO
+        </button>
+
+    </div>
+
+</section>
+
+</div>
+
+
+<script>
+
+let slideActual = 0;
+let puntos = 0;
+let respondidas = {};
+
+const totalRetos = 12;
+const puntosPorPregunta = 10;
+
+
+/* NAVEGACIÓN */
+
+function irSlide(numero) {
+
+    const slides = document.querySelectorAll(".slide");
+
+    if (numero < 0 || numero >= slides.length) {
+        return;
+    }
+
+    slides[slideActual].classList.remove("active");
+
+    slideActual = numero;
+
+    slides[slideActual].classList.add("active");
+
+    actualizarInterfaz();
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+
+/* ACTUALIZAR PUNTOS */
+
+function actualizarInterfaz() {
+
+    document.querySelectorAll(".score").forEach(elemento => {
+        elemento.textContent = puntos;
+    });
+
+    const porcentaje =
+        Math.min((puntos / (totalRetos * puntosPorPregunta)) * 100, 100);
+
+    document.querySelectorAll(".progreso-barra").forEach(barra => {
+        barra.style.width = porcentaje + "%";
+    });
+}
+
+
+/* RESPUESTAS */
+
+function respuesta(boton, correcta, id) {
+
+    if (respondidas[id]) {
+        return;
+    }
+
+    respondidas[id] = true;
+
+    const feedback = document.getElementById("feedback" + id);
+
+    const botones =
+        boton.parentElement.querySelectorAll("button");
+
+    botones.forEach(b => {
+        b.disabled = true;
+    });
+
+    if (correcta) {
+
+        boton.classList.add("correcta");
+
+        puntos += puntosPorPregunta;
+
+        feedback.className = "feedback correcto";
+
+        feedback.innerHTML =
+            "🎉 ¡Correcto! Excelente trabajo. +10 puntos";
+
+        crearConfeti();
+
+    } else {
+
+        boton.classList.add("incorrecta");
+
+        feedback.className = "feedback incorrecto";
+
+        feedback.innerHTML =
+            "💪 ¡Sigue intentando! Revisa el concepto y continúa con el siguiente reto.";
+
+    }
+
+    feedback.style.display = "block";
+
+    actualizarInterfaz();
+
+    setTimeout(() => {
+
+        if (slideActual < 13) {
+            irSlide(slideActual + 1);
+        } else {
+            mostrarResultado();
+        }
+
+    }, 1800);
+}
+
+
+/* COMPLETAR */
+
+function completar() {
+
+    if (respondidas[7]) {
+        return;
+    }
+
+    const input =
+        document.getElementById("respuestaTexto");
+
+    const valor =
+        input.value.trim().toLowerCase();
+
+    const feedback =
+        document.getElementById("feedback7");
+
+    respondidas[7] = true;
+
+    if (
+        valor === "confidencial" ||
+        valor === "confidencialidad"
+    ) {
+
+        puntos += puntosPorPregunta;
+
+        feedback.className =
+            "feedback correcto";
+
+        feedback.innerHTML =
+            "🎉 ¡Correcto! La información confidencial debe protegerse. +10 puntos";
+
+        crearConfeti();
+
+    } else {
+
+        feedback.className =
+            "feedback incorrecto";
+
+        feedback.innerHTML =
+            "💡 La respuesta esperada se relaciona con la protección de información confidencial.";
+
+    }
+
+    feedback.style.display = "block";
+
+    input.disabled = true;
+
+    actualizarInterfaz();
+
+    setTimeout(() => {
+        irSlide(8);
+    },1800);
+}
+
+
+/* RELACIONAR */
+
+let seleccionado = null;
+
+function seleccionarConcepto(elemento) {
+
+    if (elemento.classList.contains("emparejado")) {
+        return;
+    }
+
+    if (!seleccionado) {
+
+        seleccionado = elemento;
+
+        elemento.classList.add("seleccionado");
+
+        return;
+    }
+
+    if (seleccionado === elemento) {
+        return;
+    }
+
+    const id1 = seleccionado.dataset.id;
+    const id2 = elemento.dataset.id;
+
+    const mensaje =
+        document.getElementById("mensajeRelacion");
+
+    if (id1 === id2) {
+
+        seleccionado.classList.remove("seleccionado");
+
+        seleccionado.classList.add("emparejado");
+
+        elemento.classList.add("emparejado");
+
+        mensaje.textContent =
+            "✅ ¡Pareja correcta!";
+
+        mensaje.style.color = "#157347";
+
+        crearConfeti();
+
+        comprobarRelacion();
+
+    } else {
+
+        mensaje.textContent =
+            "❌ No coinciden. ¡Inténtalo de nuevo!";
+
+        mensaje.style.color = "#a52b2b";
+
+        elemento.classList.add("incorrecta");
+
+        setTimeout(() => {
+            elemento.classList.remove("incorrecta");
+        },600);
+    }
+
+    if (seleccionado) {
+        seleccionado.classList.remove("seleccionado");
+    }
+
+    seleccionado = null;
+}
+
+
+function comprobarRelacion() {
+
+    const parejas =
+        document.querySelectorAll(".concepto.emparejado");
+
+    if (parejas.length === 6) {
+
+        if (!respondidas[11]) {
+
+            respondidas[11] = true;
+
+            puntos += puntosPorPregunta;
+
+            document.getElementById("mensajeRelacion").innerHTML =
+                "🎉 ¡Excelente! Completaste todas las relaciones. +10 puntos";
+
+            actualizarInterfaz();
+
+            setTimeout(() => {
+                irSlide(12);
+            },1800);
+        }
+    }
+}
+
+
+/* RESULTADO */
+
+function mostrarResultado() {
+
+    irSlide(14);
+
+    document.getElementById("puntuacionFinal")
+        .textContent = puntos;
+
+    const mensaje =
+        document.getElementById("mensajeFinal");
+
+    const insignia =
+        document.getElementById("insignia");
+
+    const icono =
+        document.getElementById("resultadoIcono");
+
+    if (puntos >= 100) {
+
+        icono.textContent = "🏆";
+
+        insignia.textContent =
+            "🥇 Experto en Deontología";
+
+        mensaje.textContent =
+            "¡Excelente desempeño! Has demostrado un sólido dominio de los conceptos fundamentales de la deontología médica.";
+
+    } else if (puntos >= 70) {
+
+        icono.textContent = "🌟";
+
+        insignia.textContent =
+            "🥈 Buen desempeño";
+
+        mensaje.textContent =
+            "¡Muy bien! Tienes una buena base. Continúa repasando los principios de la ética y deontología médica.";
+
+    } else {
+
+        icono.textContent = "💪";
+
+        insignia.textContent =
+            "📚 En proceso";
+
+        mensaje.textContent =
+            "¡Buen esfuerzo! Repasa los conceptos y vuelve a intentarlo para fortalecer tus conocimientos.";
+
+    }
+
+    crearConfeti();
+}
+
+
+/* REINICIAR */
+
+function reiniciar() {
+
+    puntos = 0;
+
+    respondidas = {};
+
+    seleccionado = null;
+
+    document.querySelectorAll(".feedback").forEach(f => {
+        f.style.display = "none";
+        f.innerHTML = "";
+    });
+
+    document.querySelectorAll(".opcion").forEach(b => {
+        b.disabled = false;
+        b.classList.remove("correcta","incorrecta");
+    });
+
+    document.querySelectorAll(".concepto").forEach(c => {
+        c.classList.remove(
+            "seleccionado",
+            "emparejado",
+            "incorrecta"
+        );
+    });
+
+    document.getElementById("respuestaTexto").value = "";
+
+    document.getElementById("respuestaTexto").disabled = false;
+
+    document.getElementById("mensajeRelacion").textContent = "";
+
+    actualizarInterfaz();
+
+    irSlide(0);
+}
+
+
+/* CONFETI */
+
+function crearConfeti() {
+
+    for (let i = 0; i < 25; i++) {
+
+        const confeti =
+            document.createElement("div");
+
+        confeti.style.position = "fixed";
+        confeti.style.width = "10px";
+        confeti.style.height = "10px";
+        confeti.style.background =
+            ["#1769aa","#2cb67d","#ff9f43","#ee5a5a","#8e7dff"]
+            [Math.floor(Math.random()*5)];
+
+        confeti.style.left =
+            Math.random()*100 + "vw";
+
+        confeti.style.top = "-10px";
+
+        confeti.style.borderRadius = "3px";
+
+        confeti.style.zIndex = "9999";
+
+        document.body.appendChild(confeti);
+
+        const duracion =
+            1000 + Math.random()*1500;
+
+        confeti.animate(
+            [
+                {
+                    transform:
+                    "translateY(0) rotate(0deg)",
+                    opacity: 1
+                },
+                {
+                    transform:
+                    translateY(100vh) rotate(${Math.random()*720}deg),
+                    opacity: 0
+                }
+            ],
+            {
+                duration: duracion,
+                easing: "ease-out"
+            }
+        );
+
+        setTimeout(() => {
+            confeti.remove();
+        }, duracion);
+    }
+}
+
+
+/* TECLAS */
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "ArrowRight") {
+
+        if (slideActual < 14) {
+            irSlide(slideActual + 1);
+        }
+
+    }
+
+    if (event.key === "ArrowLeft") {
+
+        if (slideActual > 0) {
+            irSlide(slideActual - 1);
+        }
+
+    }
+
+});
+
+
+actualizarInterfaz();
+
+</script>
+
+</body>
+</html>
